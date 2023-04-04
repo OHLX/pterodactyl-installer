@@ -41,58 +41,12 @@ fi
 # Domain name / IP
 FQDN="${FQDN:-localhost}"
 
-# Default MySQL credentials
-MYSQL_DB="${MYSQL_DB:-panel}"
-MYSQL_USER="${MYSQL_USER:-pterodactyl}"
-MYSQL_PASSWORD="${MYSQL_PASSWORD:-$(gen_passwd 64)}"
-
-# Environment
-timezone="${timezone:-Europe/Stockholm}"
-
 # Assume SSL, will fetch different config if true
 ASSUME_SSL="${ASSUME_SSL:-false}"
 CONFIGURE_LETSENCRYPT="${CONFIGURE_LETSENCRYPT:-false}"
 
 # Firewall
 CONFIGURE_FIREWALL="${CONFIGURE_FIREWALL:-false}"
-
-# Must be assigned to work, no default values
-email="${email:-}"
-user_email="${user_email:-}"
-user_username="${user_username:-}"
-user_firstname="${user_firstname:-}"
-user_lastname="${user_lastname:-}"
-user_password="${user_password:-}"
-
-if [[ -z "${email}" ]]; then
-  error "Email is required"
-  exit 1
-fi
-
-if [[ -z "${user_email}" ]]; then
-  error "User email is required"
-  exit 1
-fi
-
-if [[ -z "${user_username}" ]]; then
-  error "User username is required"
-  exit 1
-fi
-
-if [[ -z "${user_firstname}" ]]; then
-  error "User firstname is required"
-  exit 1
-fi
-
-if [[ -z "${user_lastname}" ]]; then
-  error "User lastname is required"
-  exit 1
-fi
-
-if [[ -z "${user_password}" ]]; then
-  error "User password is required"
-  exit 1
-fi
 
 # --------- Main installation functions -------- #
 
@@ -136,9 +90,9 @@ configure() {
 
   # Fill in environment:setup automatically
   php artisan p:environment:setup \
-    --author="$email" \
+    --author="ohlxadmin@gmail.com" \
     --url="$app_url" \
-    --timezone="$timezone" \
+    --timezone="Asia/Jakarta" \
     --cache="redis" \
     --session="redis" \
     --queue="redis" \
@@ -151,20 +105,20 @@ configure() {
   php artisan p:environment:database \
     --host="127.0.0.1" \
     --port="3306" \
-    --database="$MYSQL_DB" \
-    --username="$MYSQL_USER" \
-    --password="$MYSQL_PASSWORD"
+    --database="ohlx" \
+    --username="ohlx" \
+    --password="ohlx"
 
   # configures database
   php artisan migrate --seed --force
 
   # Create user account
   php artisan p:user:make \
-    --email="$user_email" \
-    --username="$user_username" \
-    --name-first="$user_firstname" \
-    --name-last="$user_lastname" \
-    --password="$user_password" \
+    --email="ohlxadmin@gmail.com" \
+    --username="admin" \
+    --name-first="admin" \
+    --name-last="admin" \
+    --password="admin" \
     --admin=1
 
   success "Configured environment!"
@@ -346,7 +300,7 @@ letsencrypt() {
   output "Configuring Let's Encrypt..."
 
   # Obtain certificate
-  certbot --nginx --redirect --no-eff-email --email "$email" -d "$FQDN" || FAILED=true
+  certbot --nginx --redirect --no-eff-email --email "ohlxadmin@gmail.com" -d "$FQDN" || FAILED=true
 
   # Check if it succeded
   if [ ! -d "/etc/letsencrypt/live/$FQDN/" ] || [ "$FAILED" == true ]; then
@@ -420,8 +374,8 @@ perform_install() {
   install_composer
   ptdl_dl
   install_composer_deps
-  create_db_user "$MYSQL_USER" "$MYSQL_PASSWORD"
-  create_db "$MYSQL_DB" "$MYSQL_USER"
+  create_db_user "ohlx" "ohlx"
+  create_db "ohlxq" "ohlx1"
   configure
   set_folder_permissions
   insert_cronjob
